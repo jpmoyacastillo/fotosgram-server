@@ -1,8 +1,11 @@
 import { Router, Response } from "express";
+import FileSystem from "../classes/file-system";
+import { FileUpload } from "../interfaces/file-upload";
 import { verificaToken } from "../middlewares/autenticacion";
 import { Post } from "../models/post.model";
 
 const postRoutes = Router();
+const fileSystem = new FileSystem();
 
 // Obtener POST paginados
 postRoutes.get("/", async (req: any, res: Response) => {
@@ -41,6 +44,38 @@ postRoutes.post("/", [verificaToken], (req: any, res: Response) => {
     .catch((err) => {
       res.json(err);
     });
+});
+
+// Servicio para subir archivos
+postRoutes.post("/upload", [verificaToken], (req: any, res: Response) => {
+  if (!req.files) {
+    return res.status(400).json({
+      ok: false,
+      mensaje: "No se subió ningún archivo",
+    });
+  }
+  const file: FileUpload = req.files.image;
+
+  if (!file) {
+    return res.status(400).json({
+      ok: false,
+      mensaje: "No se subió ningún archivo - image",
+    });
+  }
+
+  if (!file.mimetype.includes("image")) {
+    return res.status(400).json({
+      ok: false,
+      mensaje: "Lo que subió no es una imagen",
+    });
+  }
+
+  fileSystem.guardarImagenTemporal(file, req.usuario._id);
+
+  res.json({
+    ok: true,
+    file: file.mimetype,
+  });
 });
 
 export default postRoutes;
