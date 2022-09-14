@@ -115,4 +115,13 @@ userRoutes.post("/update", verificaToken, (req: any, resp: Response) => {
   );
 });
 
+userRoutes.get("/", [verificaToken], (req: any, res: Response) => {
+  const usuario = req.usuario;
+
+  res.json({
+    ok: true,
+    usuario,
+  });
+});
+
 export default userRoutes;
